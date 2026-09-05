@@ -1,0 +1,6 @@
+[app]
+name = "ملتقى الفكر"
+org = "com.forum"
+
+[android]
+package = "com.forum.app"
