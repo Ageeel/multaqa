@@ -1,0 +1,5 @@
+[tool.flet.android]
+app_title = "ملتقى الفكر"
+package_name = "com.forum.app"
+build_number = 1
+version_name = "1.0.0"
