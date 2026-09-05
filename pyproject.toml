@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "forum_app"
+version = "0.1.0"
+description = "ملتقى الفكر والدراسات العلمية"
+authors = ["Plasma Softwares: plasma.pc@hotmail.com"]
+
+[tool.flet.app]
+path = "main.py"
+
+[tool.flet.android]
+# الاسم العربي الذي سيظهر على الشاشة بعد التثبيت
+app_title = "ملتقى الفكر"
+# معرّف الحزمة الخاص بتطبيقك
+package_name = "com.multaqaalfikir.app"
+# رقم الإصدار للاندرويد
+build_number = 1
+version_name = "1.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
