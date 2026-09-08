@@ -1,0 +1,6 @@
+[project]
+name = "Multaqa"
+version = "1.0.0"
+
+[tool.flet]
+product = "ملتقى الفكر"
