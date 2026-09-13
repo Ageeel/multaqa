@@ -229,21 +229,32 @@ class ForumApp:
                 ],
             ),
         )
-        self.page.splash = self.splash_screen
+        # page.overlay بدل page.splash المتوقفة (deprecated)، ولأن splash تُعطّل
+        # التفاعل مع كل عناصر الواجهة أسفلها عمداً وهذا ما تسبب بتجمّد الأزرار والتبويبات.
+        self.page.overlay.append(self.splash_screen)
         self.safe_update()
 
     def _hide_splash_screen(self, delay: float = 1.2):
-        """يُخفي شاشة الترحيب بتلاشٍ ناعم بعد جهوز الواجهة الرئيسية، في خيط منفصل حتى لا يُعطّل بدء التطبيق."""
+        """
+        يُخفي شاشة الترحيب بتلاشٍ ناعم بعد جهوز الواجهة الرئيسية.
+        الإزالة من page.overlay تتم دائماً (finally) حتى لو حدث أي خطأ أثناء
+        التلاشي، لضمان عدم بقاء أي طبقة تحجب التفاعل مع الأزرار والتبويبات.
+        """
         def _run():
             time.sleep(delay)
             try:
                 self.splash_screen.opacity = 0
                 self.safe_update()
                 time.sleep(0.5)
-                self.page.splash = None
-                self.safe_update()
-            except Exception:
-                pass
+            except Exception as ex:
+                print(f"[splash] خطأ أثناء تلاشي شاشة الترحيب: {ex}")
+            finally:
+                try:
+                    if self.splash_screen in self.page.overlay:
+                        self.page.overlay.remove(self.splash_screen)
+                    self.safe_update()
+                except Exception as ex:
+                    print(f"[splash] خطأ أثناء إزالة شاشة الترحيب: {ex}")
         threading.Thread(target=_run, daemon=True).start()
 
     def load_session(self):
@@ -547,7 +558,7 @@ class ForumApp:
             return
         category_field = ft.Dropdown(
             hint_text="التصنيف",
-            options=[ft.dropdown.Option("فلسفة"), ft.dropdown.Option("طب"), ft.dropdown.Option("ثقافي"), ft.dropdown.Option("معتقدات"), ft.dropdown.Option("علوم"), ft.dropdown.Option("تاريخ"), ft.dropdown.Option("رياضي"), ft.dropdown.Option("علم النفس"), ft.dropdown.Option("أساطير"), ft.dropdown.Option("لغات"), ft.dropdown.Option("أدبي"), ft.dropdown.Option("ديني"), ft.dropdown.Option("تقني"),  ft.dropdown.Option("علم إجتماع"),  ft.dropdown.Option("إدارة أعمال"),  ft.dropdown.Option("تنمية بشرية"),  ft.dropdown.Option("ريادة أعمال"), ft.dropdown.Option("أخرى")], border_radius=8,
+            options=[ft.dropdown.Option("فلسفة"), ft.dropdown.Option("طب"), ft.dropdown.Option("ثقافي"), ft.dropdown.Option("معتقدات"), ft.dropdown.Option("علوم"), ft.dropdown.Option("تاريخ"), ft.dropdown.Option("رياضي"), ft.dropdown.Option("علم النفس"), ft.dropdown.Option("أساطير"), ft.dropdown.Option("لغات"), ft.dropdown.Option("أدبي"), ft.dropdown.Option("ديني"), ft.dropdown.Option("تقني"), ft.dropdown.Option("أخرى")], border_radius=8,
             border_color=BLUE,
         )
         title_field = ft.TextField(hint_text="عنوان المقترح أو المحاضرة", border_radius=8, height=45, text_align=ft.TextAlign.RIGHT, border_color=BLUE, color=BLUE)
@@ -732,7 +743,7 @@ class ForumApp:
                 ft.dropdown.Option("معتقدات"), ft.dropdown.Option("علوم"), ft.dropdown.Option("تاريخ"), 
                 ft.dropdown.Option("رياضي"), ft.dropdown.Option("علم النفس"), ft.dropdown.Option("أساطير"), 
                 ft.dropdown.Option("لغات"), ft.dropdown.Option("أدبي"), ft.dropdown.Option("ديني"), 
-                ft.dropdown.Option("تقني"),   ft.dropdown.Option("علم إجتماع"),  ft.dropdown.Option("إدارة أعمال"),  ft.dropdown.Option("تنمية بشرية"),  ft.dropdown.Option("ريادة أعمال"), ft.dropdown.Option("أخرى")
+                ft.dropdown.Option("تقني"), ft.dropdown.Option("أخرى")
             ], 
             border_radius=8,
             border_color=BLUE,
@@ -918,7 +929,7 @@ class ForumApp:
                 ft.dropdown.Option("رياضي"), ft.dropdown.Option("علم النفس"), ft.dropdown.Option("أساطير"),
                 ft.dropdown.Option("لغات"), ft.dropdown.Option("إجتماعي"),
                 ft.dropdown.Option("لغات"), ft.dropdown.Option("أدبي"), ft.dropdown.Option("ديني"), 
-                ft.dropdown.Option("تقني"),  ft.dropdown.Option("علم إجتماع"),  ft.dropdown.Option("تنمية بشرية"),  ft.dropdown.Option("ريادة أعمال"),  ft.dropdown.Option("إدارة أعمال"), ft.dropdown.Option("أخرى")
+                ft.dropdown.Option("تقني"), ft.dropdown.Option("أخرى")
             ], 
             border_radius=8,
             border_color=BLUE,
@@ -1790,6 +1801,10 @@ class ForumApp:
                 if self.search_query and self.search_query not in title and self.search_query not in member_name:
                     continue
                 filtered_items.append(item)
+
+            if self.current_lecture_filter == "finished":
+                # ترتيب المحاضرات المكتملة من الأحدث إلى الأقدم اعتماداً على تاريخ المحاضرة
+                filtered_items.sort(key=lambda x: x.get("date", ""), reverse=True)
 
             total_items = len(filtered_items)
             total_pages = max((total_items + self.page_size - 1) // self.page_size, 1)
