@@ -136,7 +136,7 @@ topics = [
             {
             "id": 15,
             "title": "رحلة إلى المجهول: ماذا نعرف عن عالم الجان والشياطين",
-            "suggested_by":"",
+            "suggested_by":"عقيل محمد",
             "category": "ماورائيات",
             "votes": 0,"accepted": "false", "comments_count": 0,
             "date":"11-9-2026"
