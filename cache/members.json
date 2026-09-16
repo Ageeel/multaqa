@@ -78,7 +78,7 @@
         "img": "20.png",
         "contact": "https://www.facebook.com/ageel.atared",
         "birth_date": "2026-09-02",
-        "is_admin": true
+        "is_admin": false
     },
     {
         "id": 1,
